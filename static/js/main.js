@@ -180,6 +180,50 @@ async function validarNumeros() {
 
         document.getElementById('resultados-validacion').innerHTML = html;
         
+        // Mostrar resultados de Kolmogorov-Smirnov
+        if (data.kolmogorov_smirnov) {
+            const ks = data.kolmogorov_smirnov;
+            let ksHtml = `
+                <h6 class="mt-4">Resultados de la prueba Kolmogorov-Smirnov:</h6>
+                <div class="explicacion-item">
+                    <i class="fas fa-calculator"></i> Dmax calculado: ${ks.d_max.toFixed(4)}
+                </div>
+                <div class="explicacion-item">
+                    <i class="fas fa-chart-line"></i> Valor crítico (n=${ks.n}, α=${ks.alpha}): ${ks.valor_critico.toFixed(4)}
+                </div>
+                <div class="explicacion-item">
+                    <i class="fas fa-check-circle"></i> ¿Cumple la prueba?: ${ks.cumple ? 'Sí' : 'No'}
+                </div>
+                <h6 class="mt-3">Tabla de cálculo KS:</h6>
+                <div class="table-responsive" style="max-height: 250px; overflow-y: auto;">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>i</th>
+                                <th>Y(i)</th>
+                                <th>i/n</th>
+                                <th>|Y(i) - i/n|</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
+            
+            ks.tabla.forEach(row => {
+                ksHtml += `
+                    <tr>
+                        <td>${row.indice}</td>
+                        <td>${row.numero}</td>
+                        <td>${row.i_n}</td>
+                        <td>${row.dif}</td>
+                    </tr>`;
+            });
+
+            ksHtml += `
+                        </tbody>
+                    </table>
+                </div>`;
+            document.getElementById('resultados-ks').innerHTML = ksHtml;
+        }
+
         // Mostrar gráficos
         document.getElementById('graficos').innerHTML = `
             <img src="data:image/png;base64,${data.grafico}" alt="Gráficos de distribución">`;

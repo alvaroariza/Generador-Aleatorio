@@ -11,6 +11,7 @@ from generadorNumeros import (
 )
 from chi_cuadrada import validar_chi_cuadrada
 from distribucion_empirica import calcular_distribuciones
+from kolmogorov_smirnov import validar_kolmogorov_smirnov
 
 app = Flask(__name__)
 
@@ -74,7 +75,15 @@ def validar():
         if intervalos not in [2, 5]:
             return jsonify({"error": "Intervalos debe ser 2 o 5"}), 400
 
-        resultado = validar_chi_cuadrada(numeros, intervalos, alpha)
+        # --- Validación Chi-cuadrada ---
+        resultado_chi = validar_chi_cuadrada(numeros, intervalos, alpha)
+        resultado_chi['FO'] = resultado_chi['FO'].tolist()
+        resultado_chi['chi2_stat'] = float(resultado_chi['chi2_stat'])
+        resultado_chi['valor_critico'] = float(resultado_chi['valor_critico'])
+        resultado_chi['cumple'] = bool(resultado_chi['cumple'])
+        
+        # --- Validación Kolmogorov-Smirnov ---
+        resultado_ks = validar_kolmogorov_smirnov(numeros, alpha)
 
         # Calcular distribución empírica
         paso = 1 / intervalos
@@ -84,7 +93,7 @@ def validar():
             lim_sup = round((i + 1) * paso, 4)
             intervalos_lista.append((lim_inf, lim_sup))
 
-        frecuencias = list(resultado["FO"])
+        frecuencias = list(resultado_chi["FO"])
         tabla = calcular_distribuciones(frecuencias, intervalos_lista)
 
         # Generar gráficos
@@ -118,7 +127,8 @@ def validar():
         grafico_base64 = base64.b64encode(image_png).decode()
 
         return jsonify({
-            'chi_cuadrada': resultado,
+            'chi_cuadrada': resultado_chi,
+            'kolmogorov_smirnov': resultado_ks,
             'distribucion': tabla,
             'grafico': grafico_base64
         })
