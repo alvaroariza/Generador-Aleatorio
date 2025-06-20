@@ -3,27 +3,59 @@ let numerosGenerados = [];
 // Manejar cambio de tipo de generador
 document.querySelectorAll('input[name="tipo"]').forEach(radio => {
     radio.addEventListener('change', function() {
+        const tipoSeleccionado = this.value;
         const bContainer = document.getElementById('b-container');
-        if (this.value === 'multiplicativo') {
-            bContainer.style.display = 'none';
-            document.getElementById('b').value = '0';
+        const paramsCongruencial = document.getElementById('params-congruencial');
+
+        if (tipoSeleccionado === 'sistema') {
+            paramsCongruencial.style.display = 'none';
         } else {
-            bContainer.style.display = 'block';
+            paramsCongruencial.style.display = 'block';
+            if (tipoSeleccionado === 'multiplicativo') {
+                bContainer.style.display = 'none';
+                document.getElementById('b').value = '0';
+            } else { // 'mixto'
+                bContainer.style.display = 'block';
+            }
         }
     });
 });
 
 async function generarNumeros() {
     const tipo = document.querySelector('input[name="tipo"]:checked').value;
-    const a = document.getElementById('a').value;
-    const b = document.getElementById('b').value;
-    const m = document.getElementById('m').value;
-    const semilla = document.getElementById('semilla').value;
     const cantidad = document.getElementById('cantidad').value;
 
-    if (!a || !m || !semilla || !cantidad || (tipo === 'mixto' && !b)) {
-        alert('Por favor complete todos los campos requeridos');
+    if (!cantidad) {
+        alert('Por favor, ingrese la cantidad de números a generar.');
         return;
+    }
+
+    let body = { tipo, cantidad };
+
+    if (tipo !== 'sistema') {
+        const a = document.getElementById('a').value;
+        const m = document.getElementById('m').value;
+        const semilla = document.getElementById('semilla').value;
+        
+        if (!a || !m || !semilla) {
+            alert('Por favor complete todos los campos para el generador congruencial.');
+            return;
+        }
+        
+        body.a = a;
+        body.m = m;
+        body.semilla = semilla;
+
+        if (tipo === 'mixto') {
+            const b = document.getElementById('b').value;
+            if (!b) {
+                alert('Por favor complete el incremento (b).');
+                return;
+            }
+            body.b = b;
+        } else {
+            body.b = "0";
+        }
     }
 
     try {
@@ -32,40 +64,40 @@ async function generarNumeros() {
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({
-                tipo,
-                a,
-                b,
-                m,
-                semilla,
-                cantidad
-            })
+            body: JSON.stringify(body)
         });
 
         const data = await response.json();
+        if (data.error) {
+            alert("Error del servidor: " + data.error);
+            return;
+        }
         numerosGenerados = data.numeros;
         
         // Mostrar resultados
         let html = `
             <h6>Números generados:</h6>
-            <div class="numeros-generados">${numerosGenerados.join(', ')}</div>
-            <h6 class="mt-3">Análisis del generador:</h6>
-            <div class="explicacion-item">
-                <i class="fas fa-sync"></i> Longitud del período: ${data.periodo}
-            </div>`;
-
-        if (tipo === 'mixto') {
+            <div class="numeros-generados">${numerosGenerados.map(n => n.toFixed(4)).join(', ')}</div>
+            <h6 class="mt-3">Análisis del generador:</h6>`;
+        
+        if (tipo !== 'sistema') {
             html += `
                 <div class="explicacion-item">
-                    <i class="fas fa-check-circle"></i> ¿Es ciclo completo?: ${data.ciclo_completo ? 'Sí' : 'No'}
+                    <i class="fas fa-sync"></i> Longitud del período: ${data.periodo}
                 </div>`;
-        } else {
-            html += `
-                <div class="explicacion-item">
-                    <i class="fas fa-check-circle"></i> ¿Tiene longitud máxima (m-1 = ${m-1})?: ${data.periodo === m-1 ? 'Sí' : 'No'}
-                </div>`;
+            if (tipo === 'mixto') {
+                html += `
+                    <div class="explicacion-item">
+                        <i class="fas fa-check-circle"></i> ¿Es ciclo completo?: ${data.ciclo_completo ? 'Sí' : 'No'}
+                    </div>`;
+            } else {
+                html += `
+                    <div class="explicacion-item">
+                        <i class="fas fa-check-circle"></i> ¿Tiene longitud máxima (m-1)?: ${data.es_maximo ? 'Sí' : 'No'}
+                    </div>`;
+            }
         }
-
+        
         html += '<h6 class="mt-3">Explicación:</h6>';
         data.explicaciones.forEach(exp => {
             html += `<div class="explicacion-item">${exp}</div>`;
@@ -74,6 +106,7 @@ async function generarNumeros() {
         document.getElementById('resultados-generacion').innerHTML = html;
         document.getElementById('btn-validar').disabled = false;
         document.getElementById('resultados-validacion').innerHTML = '';
+        document.getElementById('resultados-ks').innerHTML = '';
         document.getElementById('graficos').innerHTML = '';
 
     } catch (error) {
@@ -222,6 +255,28 @@ async function validarNumeros() {
                     </table>
                 </div>`;
             document.getElementById('resultados-ks').innerHTML = ksHtml;
+        }
+
+        // Mostrar resultados de Test de Entropía
+        if (data.entropia) {
+            const entropia = data.entropia;
+            const porcentaje = (entropia.entropia / entropia.max_entropia) * 100;
+            let entropiaHtml = `
+                <h6 class="mt-4">Resultados del Test de Entropía (Shannon):</h6>
+                <div class="explicacion-item">
+                    <i class="fas fa-wave-square"></i> Entropía calculada: <strong>${entropia.entropia.toFixed(4)}</strong>
+                </div>
+                <div class="explicacion-item">
+                    <i class="fas fa-chart-line"></i> Entropía máxima (para ${entropia.bins} clases): <strong>${entropia.max_entropia.toFixed(4)}</strong>
+                </div>
+                <div class="progress mt-2" style="height: 25px; font-size: 1rem;">
+                    <div class="progress-bar bg-info" role="progressbar" style="width: ${porcentaje}%;" aria-valuenow="${entropia.entropia}" aria-valuemin="0" aria-valuemax="${entropia.max_entropia}">
+                        ${porcentaje.toFixed(1)}%
+                    </div>
+                </div>
+                <small class="form-text text-muted">Una entropía más cercana al máximo (100%) indica una mayor aleatoriedad en la secuencia.</small>
+                `;
+            document.getElementById('resultados-entropia').innerHTML = entropiaHtml;
         }
 
         // Mostrar gráficos

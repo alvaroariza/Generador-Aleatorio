@@ -26,27 +26,31 @@
                                 <label class="btn btn-outline-primary" for="mixto">Mixto</label>
                                 <input type="radio" class="btn-check" name="tipo" id="multiplicativo" value="multiplicativo">
                                 <label class="btn btn-outline-primary" for="multiplicativo">Multiplicativo</label>
+                                <input type="radio" class="btn-check" name="tipo" id="sistema" value="sistema">
+                                <label class="btn btn-outline-primary" for="sistema">Bits de Sistema</label>
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="a" class="form-label">Multiplicador (a)</label>
-                            <input type="number" class="form-control" id="a" required>
-                        </div>
+                        <div id="params-congruencial">
+                            <div class="mb-3">
+                                <label for="a" class="form-label">Multiplicador (a)</label>
+                                <input type="number" class="form-control" id="a" required>
+                            </div>
 
-                        <div class="mb-3" id="b-container">
-                            <label for="b" class="form-label">Incremento (b)</label>
-                            <input type="number" class="form-control" id="b" required>
-                        </div>
+                            <div class="mb-3" id="b-container">
+                                <label for="b" class="form-label">Incremento (b)</label>
+                                <input type="number" class="form-control" id="b" required>
+                            </div>
 
-                        <div class="mb-3">
-                            <label for="m" class="form-label">Módulo (m)</label>
-                            <input type="number" class="form-control" id="m" required>
-                        </div>
+                            <div class="mb-3">
+                                <label for="m" class="form-label">Módulo (m)</label>
+                                <input type="number" class="form-control" id="m" required>
+                            </div>
 
-                        <div class="mb-3">
-                            <label for="semilla" class="form-label">Semilla</label>
-                            <input type="number" class="form-control" id="semilla" required>
+                            <div class="mb-3">
+                                <label for="semilla" class="form-label">Semilla</label>
+                                <input type="number" class="form-control" id="semilla" required>
+                            </div>
                         </div>
 
                         <div class="mb-3">
@@ -97,7 +101,8 @@
                     <div class="card-body">
                         <div id="resultados-generacion" class="mb-4"></div>
                         <div id="resultados-validacion" class="mb-4"></div>
-                        <div id="resultados-ks"></div>
+                        <div id="resultados-ks" class="mb-4"></div>
+                        <div id="resultados-entropia"></div>
                         <div id="graficos" class="text-center mt-4"></div>
                     </div>
                 </div>

@@ -1,7 +1,15 @@
+import os
 from sympy import isprime, gcd, divisors
 import matplotlib.pyplot as plt
 from chi_cuadrada import validar_chi_cuadrada
 from distribucion_empirica import calcular_distribuciones
+
+def generar_desde_entropy_sistema(cantidad):
+    """Genera números aleatorios utilizando la fuente de entropía del sistema operativo."""
+    # os.urandom(4) genera 4 bytes aleatorios (32 bits)
+    # int.from_bytes lo convierte a un entero
+    # Se divide por 2**32 para normalizar el número al rango [0, 1)
+    return [int.from_bytes(os.urandom(4), "big") / 2**32 for _ in range(cantidad)]
 
 def generador_mixto(a, b, m, semilla, cantidad):
     numeros = []

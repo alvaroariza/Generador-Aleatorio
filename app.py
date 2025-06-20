@@ -7,11 +7,12 @@ import matplotlib.pyplot as plt
 from generadorNumeros import (
     generador_mixto, generador_multiplicativo,
     evaluar_ciclo_completo_mixto, explicar_raiz_primitiva,
-    obtener_longitud_periodo
+    obtener_longitud_periodo, generar_desde_entropy_sistema
 )
 from chi_cuadrada import validar_chi_cuadrada
 from distribucion_empirica import calcular_distribuciones
 from kolmogorov_smirnov import validar_kolmogorov_smirnov
+from shannon_entropy import calcular_entropia
 
 app = Flask(__name__)
 
@@ -26,14 +27,15 @@ def generar():
     data = request.get_json()
     if not data:
         return jsonify({"error": "Datos JSON vacíos"}), 400
+    
     tipo = data['tipo']
-    a = int(data['a'])
-    m = int(data['m'])
-    semilla = int(data['semilla'])
     cantidad = int(data['cantidad'])
     
     if tipo == 'mixto':
+        a = int(data['a'])
         b = int(data['b'])
+        m = int(data['m'])
+        semilla = int(data['semilla'])
         numeros = generador_mixto(a, b, m, semilla, cantidad)
         periodo = obtener_longitud_periodo(a, b, m, semilla, es_mixto=True)
         ciclo_completo, explicaciones = evaluar_ciclo_completo_mixto(a, b, m)
@@ -43,7 +45,10 @@ def generar():
             'ciclo_completo': ciclo_completo,
             'explicaciones': explicaciones
         }
-    else:
+    elif tipo == 'multiplicativo':
+        a = int(data['a'])
+        m = int(data['m'])
+        semilla = int(data['semilla'])
         numeros = generador_multiplicativo(a, m, semilla, cantidad)
         periodo = obtener_longitud_periodo(a, 0, m, semilla, es_mixto=False)
         es_maximo, explicaciones = explicar_raiz_primitiva(a, m)
@@ -52,6 +57,13 @@ def generar():
             'periodo': periodo,
             'es_maximo': es_maximo,
             'explicaciones': explicaciones
+        }
+    elif tipo == 'sistema':
+        numeros = generar_desde_entropy_sistema(cantidad)
+        resultado = {
+            'numeros': numeros,
+            'periodo': 'N/A',
+            'explicaciones': ["Generador basado en la entropía del sistema (fuente física). No es pseudoaleatorio y no tiene un período predecible."]
         }
     
     return jsonify(resultado)
@@ -84,6 +96,10 @@ def validar():
         
         # --- Validación Kolmogorov-Smirnov ---
         resultado_ks = validar_kolmogorov_smirnov(numeros, alpha)
+
+        # --- Test de Entropía ---
+        # Usamos los mismos intervalos que en Chi-cuadrada como "bins" para la entropía
+        resultado_entropia = calcular_entropia(numeros, bins=intervalos)
 
         # Calcular distribución empírica
         paso = 1 / intervalos
@@ -129,6 +145,7 @@ def validar():
         return jsonify({
             'chi_cuadrada': resultado_chi,
             'kolmogorov_smirnov': resultado_ks,
+            'entropia': resultado_entropia,
             'distribucion': tabla,
             'grafico': grafico_base64
         })
