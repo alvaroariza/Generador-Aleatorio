@@ -13,6 +13,7 @@ from chi_cuadrada import validar_chi_cuadrada
 from distribucion_empirica import calcular_distribuciones
 from kolmogorov_smirnov import validar_kolmogorov_smirnov
 from shannon_entropy import calcular_entropia
+from aceptacion_rechazo import evaluar_aceptacion_rechazo
 
 app = Flask(__name__)
 
@@ -152,6 +153,37 @@ def validar():
     except Exception as e:
         print("Error en /validar:", e)
         return jsonify({"error": f"Error interno: {str(e)}"}), 500
+
+@app.route('/generar-variable', methods=['POST'])
+def generar_variable():
+    if not request.is_json:
+        return jsonify({"error": "Se requiere JSON"}), 400
+    
+    data = request.get_json()
+    metodo = data.get('metodo')
+    formula = data.get('formula')
+    resultado = {}
+    
+    if metodo == 'rechazo':
+        try:
+            a = float(data.get('a'))
+            b = float(data.get('b'))
+            n = int(data.get('n'))
+            if n <= 0:
+                return jsonify({"error": "La cantidad debe ser un número positivo."}), 400
+            resultado = evaluar_aceptacion_rechazo(formula, a, b, n)
+            if 'error' not in resultado:
+                resultado['metodo'] = 'rechazo'
+        except (ValueError, TypeError):
+            return jsonify({"error": "Parámetros a, b o n inválidos."}), 400
+    else:
+        resultado = {"error": "Método no reconocido."}
+        
+    return jsonify(resultado)
+
+@app.route('/variableAleatoria')
+def variable_aleatoria_page():
+    return render_template('variable_aleatoria.html')
 
 if __name__ == '__main__':
     app.run(debug=True) 

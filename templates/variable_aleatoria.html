@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Variables Aleatorias</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/keyboard.css') }}">
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Generador de Variables Aleatorias</h1>
+            <a href="/" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Volver al Generador
+            </a>
+        </div>
+        
+        <div class="row">
+            <div class="col-lg-7">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="card-title mb-0">Configuración</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">Método de Generación</label>
+                            <h5>Aceptación-Rechazo</h5>
+                        </div>
+
+                        <div id="params-rechazo">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="intervalo_a" class="form-label">Intervalo [a]</label>
+                                        <input type="number" class="form-control" id="intervalo_a" value="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="intervalo_b" class="form-label">Intervalo [b]</label>
+                                        <input type="number" class="form-control" id="intervalo_b" value="1">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="cantidad_va" class="form-label">Cantidad (N)</label>
+                                        <input type="number" class="form-control" id="cantidad_va" value="50">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="formula" class="form-label">Fórmula (f(x))</label>
+                            <input type="text" class="form-control" id="formula" placeholder="Ingrese la fórmula aquí..." readonly>
+                        </div>
+
+                        <!-- Teclado Virtual -->
+                        <div id="virtual-keyboard">
+                            <!-- Fila 1 -->
+                            <div class="row g-1">
+                                <div class="col-2"><button class="btn btn-key" data-key="x">x</button></div>
+                                <div class="col-2"><button class="btn btn-key" data-key="y">y</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="7">7</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="8">8</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="9">9</button></div>
+                                <div class="col-2"><button class="btn btn-op" data-key="/">/</button></div>
+                            </div>
+                            <!-- Fila 2 -->
+                            <div class="row g-1 mt-1">
+                                <div class="col-2"><button class="btn btn-key" data-key="^2">x²</button></div>
+                                <div class="col-2"><button class="btn btn-key" data-key="^">xʸ</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="4">4</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="5">5</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="6">6</button></div>
+                                <div class="col-2"><button class="btn btn-op" data-key="*">*</button></div>
+                            </div>
+                            <!-- Fila 3 -->
+                            <div class="row g-1 mt-1">
+                                <div class="col-2"><button class="btn btn-key" data-key="sqrt(">√</button></div>
+                                <div class="col-2"><button class="btn btn-key" data-key="abs(">|x|</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="1">1</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="2">2</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key="3">3</button></div>
+                                <div class="col-2"><button class="btn btn-op" data-key="-">-</button></div>
+                            </div>
+                            <!-- Fila 4 -->
+                            <div class="row g-1 mt-1">
+                                <div class="col-2"><button class="btn btn-key" data-key="(">(</button></div>
+                                <div class="col-2"><button class="btn btn-key" data-key=")">)</button></div>
+                                <div class="col-4"><button class="btn btn-num" data-key="0">0</button></div>
+                                <div class="col-2"><button class="btn btn-num" data-key=".">.</button></div>
+                                <div class="col-2"><button class="btn btn-op" data-key="+">+</button></div>
+                            </div>
+                            <!-- Fila 5 -->
+                            <div class="row g-1 mt-1">
+                                <div class="col-2"><button class="btn btn-key" data-key="pi">π</button></div>
+                                <div class="col-2"><button class="btn btn-key" data-key="e">e</button></div>
+                                <div class="col-2"><button class="btn btn-op" id="clear">C</button></div>
+                                <div class="col-2"><button class="btn btn-op" id="backspace"><i class="fas fa-backspace"></i></button></div>
+                                <div class="col-4"><button class="btn btn-success" id="generate">Generar</button></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <!-- Aquí irán los resultados o parámetros adicionales -->
+                <div class="card">
+                    <div class="card-header"><h5 class="card-title mb-0">Resultados</h5></div>
+                    <div class="card-body" id="va-results">
+                        Esperando generación...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/variable_aleatoria.js') }}"></script>
+</body>
+</html> 
